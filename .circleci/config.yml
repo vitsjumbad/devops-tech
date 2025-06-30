@@ -22,7 +22,7 @@ jobs:
             ./mvnw clean package -DskipTests
 
       - setup_remote_docker:
-          version: 20.10.18  # enable Docker in CircleCI
+
 
       - run:
           name: Build Docker image
