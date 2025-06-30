@@ -1,0 +1,45 @@
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/openjdk:17.0  # CircleCI official Java 17 image
+    working_directory: ~/project
+
+jobs:
+  build:
+    executor: docker-executor
+    steps:
+      - checkout  # Pull your code from GitHub
+      - run:
+          name: Show Java version
+          command: java -version
+
+      - run:
+          name: Build app with Maven wrapper
+          command: |
+            chmod +x mvnw
+            ./mvnw clean package -DskipTests
+
+      - setup_remote_docker:
+          version: 20.10.18  # enable Docker in CircleCI
+
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t springboot-devops-demo .
+
+      # Optional: test Docker image locally
+      - run:
+          name: Run Docker container (test)
+          command: |
+            docker run -d -p 8081:8081 springboot-devops-demo
+            sleep 10
+            curl -f http://localhost:8081/health
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+
