@@ -3,37 +3,38 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: cimg/openjdk:17.0  # CircleCI official Java 17 image
+      - image: cimg/openjdk:17.0
     working_directory: ~/project
 
 jobs:
   build:
     executor: docker-executor
     steps:
-      - checkout  # Pull your code from GitHub
+      - checkout
       - run:
           name: Show Java version
           command: java -version
-
       - run:
           name: Build app with Maven wrapper
           command: |
             chmod +x mvnw
             ./mvnw clean package -DskipTests
-
       - setup_remote_docker
-
-
       - run:
           name: Build Docker image
-          command: |
-            docker build -t springboot-devops-demo .
+          command: docker build -t springboot-devops-demo .
+      - run:
+          name: Tag Docker image
+          command: docker tag springboot-devops-demo djdevops2025/springboot-devops-demo:latest
+      - run:
+          name: Login to Docker Hub
+          command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Push Docker image
+          command: docker push djdevops2025/springboot-devops-demo:latest
 
-      # Optional: test Docker image locally
-  
 workflows:
   version: 2
-  build_and_test:
+  build_and_push:
     jobs:
       - build
-
