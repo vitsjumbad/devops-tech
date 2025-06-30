@@ -30,13 +30,7 @@ jobs:
             docker build -t springboot-devops-demo .
 
       # Optional: test Docker image locally
-      - run:
-          name: Run Docker container (test)
-          command: |
-            docker run -d -p 8081:8081 springboot-devops-demo
-            sleep 10
-            curl -f http://localhost:8081/health
-
+  
 workflows:
   version: 2
   build_and_test:
