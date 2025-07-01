@@ -1,40 +1,32 @@
-version: 2.1
-
-executors:
-  docker-executor:
-    docker:
-      - image: cimg/openjdk:17.0
-    working_directory: ~/project
-
 jobs:
-  build:
-    executor: docker-executor
+  deploy:
+    docker:
+      - image: cimg/base:stable
     steps:
-      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "your-key-fingerprint-if-using-circleci's SSH keys"
       - run:
-          name: Show Java version
-          command: java -version
-      - run:
-          name: Build app with Maven wrapper
+          name: Save private key
           command: |
-            chmod +x mvnw
-            ./mvnw clean package -DskipTests
-      - setup_remote_docker
+            echo "$EC2_PRIVATE_KEY" > ec2-key.pem
+            chmod 600 ec2-key.pem
       - run:
-          name: Build Docker image
-          command: docker build -t springboot-devops-demo .
-      - run:
-          name: Tag Docker image
-          command: docker tag springboot-devops-demo djdevops2025/springboot-devops-demo:latest
-      - run:
-          name: Login to Docker Hub
-          command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-      - run:
-          name: Push Docker image
-          command: docker push djdevops2025/springboot-devops-demo:latest
+          name: Deploy to EC2
+          command: |
+            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST << EOF
+              docker pull djdevops2025/springboot-devops-demo:latest
+              docker stop \$(docker ps -q --filter ancestor=djdevops2025/springboot-devops-demo:latest) || true
+              docker rm \$(docker ps -aq --filter ancestor=djdevops2025/springboot-devops-demo:latest) || true
+              docker run -d -p 8081:8081 djdevops2025/springboot-devops-demo:latest
+            EOF
 
 workflows:
   version: 2
-  build_and_push:
+  build-deploy:
     jobs:
       - build
+      - deploy:
+          requires:
+            - build
+            
