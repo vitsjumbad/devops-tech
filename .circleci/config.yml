@@ -54,7 +54,7 @@ jobs:
               docker stop app || true
               docker rm app || true
               docker run -d -p 8081:8081 --name app djdevops2025/springboot-devops-demo:latest
-      EOF
+               EOF
 
 
 
