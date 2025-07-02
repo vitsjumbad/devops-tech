@@ -38,23 +38,23 @@ jobs:
       - run:
           name: SSH and deploy on EC2
           command: |
-            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST \<< EOF
+            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "
               docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
               docker pull djdevops2025/springboot-devops-demo:latest
               docker stop \$(docker ps -q --filter ancestor=djdevops2025/springboot-devops-demo:latest) || true
               docker rm \$(docker ps -aq --filter ancestor=djdevops2025/springboot-devops-demo:latest) || true
               docker run -d -p 8081:8081 djdevops2025/springboot-devops-demo:latest
-            EOF
+            "
 
       - run:
           name: Deploy on EC2
           command: |
-            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST << EOF
+            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "
               docker pull djdevops2025/springboot-devops-demo:latest
               docker stop app || true
               docker rm app || true
               docker run -d -p 8081:8081 --name app djdevops2025/springboot-devops-demo:latest
-               EOF
+               "
 
 
 
