@@ -11,17 +11,17 @@ jobs:
           docker_layer_caching: true
 
       - run:
-          name: Build Docker Image
+          name: Build Docker image
           command: |
             docker build -t djdevops2025/springboot-devops-demo:latest .
 
       - run:
-          name: Login to DockerHub
+          name: Docker login
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
 
       - run:
-          name: Push Image to DockerHub
+          name: Push image to DockerHub
           command: |
             docker push djdevops2025/springboot-devops-demo:latest
 
@@ -30,43 +30,26 @@ jobs:
       - image: cimg/base:stable
     steps:
       - run:
-          name: Save private key
+          name: Save EC2 private key
           command: |
             echo "$EC2_PRIVATE_KEY" > ec2-key.pem
             chmod 600 ec2-key.pem
 
       - run:
-          name: SSH and deploy on EC2
+          name: SSH and deploy
           command: |
-            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "
-              docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
-              docker pull djdevops2025/springboot-devops-demo:latest
-              docker stop \$(docker ps -q --filter ancestor=djdevops2025/springboot-devops-demo:latest) || true
-              docker rm \$(docker ps -aq --filter ancestor=djdevops2025/springboot-devops-demo:latest) || true
-              docker run -d -p 8081:8081 djdevops2025/springboot-devops-demo:latest
-            "
-
-      - run:
-          name: Deploy on EC2
-          command: |
-            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST "
-              docker pull djdevops2025/springboot-devops-demo:latest
-              docker stop app || true
-              docker rm app || true
+            ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST '
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin &&
+              docker pull djdevops2025/springboot-devops-demo:latest &&
+              docker stop app || true &&
+              docker rm app || true &&
               docker run -d -p 8081:8081 --name app djdevops2025/springboot-devops-demo:latest
-               "
-
-
-
-
+            '
 
 workflows:
-  version: 2
   build_and_deploy:
     jobs:
       - build
       - deploy:
           requires:
             - build
-
-
