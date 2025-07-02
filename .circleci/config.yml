@@ -39,7 +39,7 @@ jobs:
            name: SSH and deploy
            command: |
              ssh -o StrictHostKeyChecking=no -i ec2-key.pem $EC2_USER@$EC2_HOST '
-             docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_PASS" &&
+             docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_PASSWORD" &&
              docker pull djdevops2025/springboot-devops-demo:latest &&
              docker stop app || true &&
              docker rm app || true &&
