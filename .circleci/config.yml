@@ -17,6 +17,14 @@ jobs:
       - store_artifacts:
           path: target/site/jacoco
           destination: jacoco-report
+
+      - run:
+          name: Run SonarQube analysis
+          command: |
+              mvn sonar:sonar \
+              -Dsonar.projectKey=springboot-devops-demo \
+              -Dsonar.host.url=$SONAR_HOST_URL \
+              -Dsonar.login=$SONAR_TOKEN   
   
 
       - setup_remote_docker:
