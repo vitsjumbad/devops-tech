@@ -7,11 +7,17 @@ jobs:
     steps:
       - checkout
       
+      
       - run:
-          name: Run Unit Tests
+          name: Run unit tests and generate code coverage
           command: |
-          
             mvn clean test
+            echo "==== Code coverage report location ===="
+            echo "target/site/jacoco/index.html (downloadable in artifacts if configured)"
+      - store_artifacts:
+          path: target/site/jacoco
+          destination: jacoco-report
+  
 
       - setup_remote_docker:
           docker_layer_caching: true
