@@ -1,27 +1,33 @@
 package com.example.demo;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class SpringbootDevopsDemoApplicationTests {
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.ResponseEntity;
 
-    @LocalServerPort
-    private int port;
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class SpringbootDevopsDemoApplicationTests {
 
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Test
-    void greetEndpointReturnsExpectedMessage() {
-        String name = "TestUser";
-        String url = "http://localhost:" + port + "/greet?name=" + name;
-        String response = this.restTemplate.getForObject(url, String.class);
-        assertThat(response).isEqualTo("Hello, " + name + "!");
+    void contextLoads() {
+    }
+
+    @Test
+    void greetWithNameReturnsExpectedMessage() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/greet?name=jack", String.class);
+        assertThat(response.getBody()).isEqualTo("Hello, jack!");
+    }
+
+    @Test
+    void greetWithoutNameReturnsExpectedMessage() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/greet", String.class);
+        assertThat(response.getBody()).contains("Hello");  // Adjust if you have a default behavior
     }
 }
